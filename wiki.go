@@ -29,14 +29,18 @@ func loadPage(title string) (*Page, error) {
 
 // Render html template
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	temp, _ := template.ParseFiles(tmpl + ".html")
-	err := temp.Execute(w, p)
+	temp, err := template.ParseFiles(tmpl + ".html")
 	if err != nil {
-		w.Write([]byte("Can't render html"))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = temp.Execute(w, p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-// handles /view request
+// handles /view/ request
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/view/"):]
 	page, err := loadPage(title)
@@ -46,18 +50,31 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "view", page)
 }
 
-// handles /edit request
+// handles /edit/ request
 func editHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/edit/"):]
 	page, err := loadPage(title)
 	if err != nil {
-		page = &Page{Title: "Edit"}
+		page = &Page{Title: title}
 	}
 	renderTemplate(w, "edit", page)
+}
+
+// handles /save/ request
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	body := []byte(r.FormValue("body"))
+	page := &Page{title, body}
+	err := page.save()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
 func main() {
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
 	http.ListenAndServe(":8080", nil)
 }
