@@ -39,7 +39,10 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 // handles /view request
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/view/"):]
-	page, _ := loadPage(title)
+	page, err := loadPage(title)
+	if err != nil {
+		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
+	}
 	renderTemplate(w, "view", page)
 }
 
