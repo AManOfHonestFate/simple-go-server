@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 )
@@ -26,14 +27,8 @@ func loadPage(title string) (*Page, error) {
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/view/"):]
-	page, err := loadPage(title)
-	if err != nil {
-		return
-	}
-	_, err = w.Write(page.Body)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-	}
+	page, _ := loadPage(title)
+	fmt.Fprintf(w, "<h1>%s</h2>\n<p>%s</p>", page.Title, page.Body)
 	return
 }
 
