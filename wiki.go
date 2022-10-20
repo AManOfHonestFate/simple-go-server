@@ -80,7 +80,7 @@ func makeHandler(handler func(w http.ResponseWriter, r *http.Request, title stri
 	}
 }
 
-// Valid Url Path
+// Valid Url Path temp
 var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
 func main() {
